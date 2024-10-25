@@ -2,22 +2,7 @@ local ISVector2 = require('ISVector2')
 
 ISFollowPlayer = {}
 function ISFollowPlayer.ActivateFollow(player, clickedPlayer)
-    -- maybe this just for admin when debug is enabled?
-    -- local dbgOptions = getDebugOptions()
-    -- if dbgOptions then
-    --     for i=1,dbgOptions:getOptionCount() do
-    --         local option = dbgOptions:getOptionByIndex(i-1)
-    --         print(option:getName())
-    --         if option:getName() == "Multiplayer.Debug.Follow.Player" then
-    --             print("Value before: " .. tostring(option:getValue()))
-    --             option:setValue(true)
-    --             print("Value after: " .. tostring(option:getValue()))
-    --             getDebugOptions():save()
-                print("COMPLIMENTI VORSHIM")
-    --             break
-    --         end
-    --     end
-    -- end
+
     local vectorStop = ISVector2:new(0,0)
 
     local x,y = player:getX(), player:getY()
@@ -28,19 +13,11 @@ function ISFollowPlayer.ActivateFollow(player, clickedPlayer)
     local var3 = ISVector2:new(x2 - x, y - y2)
     var3:rotate(-math.pi / 4) -- Rotate by -45 degrees
     var3:normalize()
-    player:setPlayerMoveDir(var3.vector)
+    local pfb2 = player:getPathFindBehavior2()
+    player:pathToCharacter(clickedPlayer) -- ottimo per creare in automatico il path verso il player
+    -- player:setMoveForwardVec(var3.vector) --not working
+    player:MoveForward(1, x2, y2, 0)
 
-
-    -- if (!var2.isTeleporting() && !(var2.getDistanceSq(var0) > 10.0F)) {
-    --     if (var2.getDistanceSq(var0) > 5.0F) {
-    --        var0.setRunning(true);
-    --        var0.setSprinting(true);
-    --     } else if (var2.getDistanceSq(var0) > 2.5F) {
-    --        var0.setRunning(true);
-    --     } else if (var2.getDistanceSq(var0) < 1.25F) {
-    --        var1.moveX = 0.0F;
-    --        var1.moveY = 0.0F;
-    --     }
     local distanceSq = clickedPlayer:getDistanceSq(player)
     print("distanceSq: " .. tostring(distanceSq))
     if distanceSq <= 100.0 then
@@ -52,43 +29,41 @@ function ISFollowPlayer.ActivateFollow(player, clickedPlayer)
         elseif distanceSq < 1.5625 then -- 1.25^2 = 1.5625
             player:setRunning(false)
             player:setSprinting(false)
-            player:setPlayerMoveDir(vectorStop.vector)
         end
     else
         -- Handle the case when the target is too far
-        player:setPlayerMoveDir(vectorStop.vector)
     end
     
 end
 
 function ISFollowPlayer.FollowAction(worldobjects, playerObj, clickedPlayer)
-    -- ISTimedActionQueue.add(ISFollowPlayerTimedAction:new(playerObj, clickedPlayer)) -- still need to figure out
-    ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
+    ISTimedActionQueue.add(ISFollowToTimedAction:new(playerObj, clickedPlayer)) -- still need to figure out
+    -- ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
 
 end
 
 --alternative method with Events onTick
 function ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
-    local function followTick()
-        if playerObj:isDead() or clickedPlayer:isDead() then
-            Events.OnTick.Remove(followTick)
-            return
-        end
+    -- local function followTick()
+    --     if playerObj:isDead() or clickedPlayer:isDead() then
+    --         Events.OnTick.Remove(followTick)
+    --         return
+    --     end
 
-        local distanceSq = clickedPlayer:getDistanceSq(playerObj)
-        if distanceSq < 1.5625 then -- Close enough
-            playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
-            Events.OnTick.Remove(followTick)
-            return
-        elseif distanceSq > 1000 then -- Too far away (e.g., 100 units)
-            playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
-            Events.OnTick.Remove(followTick)
-            return
-        end
+    --     local distanceSq = clickedPlayer:getDistanceSq(playerObj)
+    --     if distanceSq < 1.5625 then -- Close enough
+    --         playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
+    --         Events.OnTick.Remove(followTick)
+    --         return
+    --     elseif distanceSq > 1000 then -- Too far away (e.g., 100 units)
+    --         playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
+    --         Events.OnTick.Remove(followTick)
+    --         return
+    --     end
 
-        ISFollowPlayer.ActivateFollow(playerObj, clickedPlayer)
-    end
-    Events.OnTick.Add(followTick)
+    --     ISFollowPlayer.ActivateFollow(playerObj, clickedPlayer)
+    -- end
+    -- Events.OnTick.Add(followTick)
 end
 --Avoiding Multiple Follow Actions
 -- Ensure that you don't add multiple OnTick events for the same player. You might need to keep track of whether a player is already following someone.
@@ -112,14 +87,14 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
     local playerObj = getSpecificPlayer(player)
     local followerCount = 0
     local followers = {}
-    for i, obj in ipairs(worldobjects) do
-        if instanceof(obj, "IsoPlayer") then
-                if ISFollowPlayer.CanFollowPlayer(playerObj, clickedPlayer) and not followers[clickedPlayer:getUsername()] then
-                followers[obj:getUsername()] = obj
-                followerCount = followerCount + 1
-            end
-        end
-    end
+    -- for i, obj in ipairs(worldobjects) do
+    --     if instanceof(obj, "IsoPlayer") then
+    --             if ISFollowPlayer.CanFollowPlayer(playerObj, clickedPlayer) and not followers[clickedPlayer:getUsername()] then
+    --             followers[obj:getUsername()] = obj
+    --             followerCount = followerCount + 1
+    --         end
+    --     end
+    -- end
     for _, v in ipairs(worldobjects) do
         if v:getSquare() then
             -- help detecting a player by checking nearby squares
