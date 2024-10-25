@@ -80,7 +80,7 @@ function ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
             playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
             Events.OnTick.Remove(followTick)
             return
-        elseif distanceSq > 10000 then -- Too far away (e.g., 100 units)
+        elseif distanceSq > 1000 then -- Too far away (e.g., 100 units)
             playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
             Events.OnTick.Remove(followTick)
             return
@@ -114,32 +114,32 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
     local followers = {}
     for i, obj in ipairs(worldobjects) do
         if instanceof(obj, "IsoPlayer") then
-            if not followers[obj:getUsername()] then
+                if ISFollowPlayer.CanFollowPlayer(playerObj, clickedPlayer) and not followers[clickedPlayer:getUsername()] then
                 followers[obj:getUsername()] = obj
                 followerCount = followerCount + 1
             end
         end
     end
-    -- for _, v in ipairs(worldobjects) do
-    --     if v:getSquare() then
-    --         -- help detecting a player by checking nearby squares
-    --         for x = v:getSquare():getX() - 1, v:getSquare():getX() + 1 do
-    --             for y = v:getSquare():getY() - 1, v:getSquare():getY() + 1 do
-    --                 local sq = getCell():getGridSquare(x, y, v:getSquare():getZ())
-    --                 if sq then
-    --                     for i = 0, sq:getMovingObjects():size() - 1 do
-    --                         local clickedPlayer = sq:getMovingObjects():get(i)
+    for _, v in ipairs(worldobjects) do
+        if v:getSquare() then
+            -- help detecting a player by checking nearby squares
+            for x = v:getSquare():getX() - 1, v:getSquare():getX() + 1 do
+                for y = v:getSquare():getY() - 1, v:getSquare():getY() + 1 do
+                    local sq = getCell():getGridSquare(x, y, v:getSquare():getZ())
+                    if sq then
+                        for i = 0, sq:getMovingObjects():size() - 1 do
+                            local clickedPlayer = sq:getMovingObjects():get(i)
 
-    --                         if ISFollowPlayer.CanFollowPlayer(playerObj, clickedPlayer) and not followers[clickedPlayer:getUsername()] then
-    --                             followers[clickedPlayer:getUsername()] = clickedPlayer
-    --                             followerCount = followerCount + 1
-    --                         end
-    --                     end
-    --                 end
-    --             end
-    --         end
-    --     end
-    -- end
+                            if not followers[clickedPlayer:getUsername()] then
+                                followers[clickedPlayer:getUsername()] = clickedPlayer
+                                followerCount = followerCount + 1
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 
     if followerCount == 0 then
         return
