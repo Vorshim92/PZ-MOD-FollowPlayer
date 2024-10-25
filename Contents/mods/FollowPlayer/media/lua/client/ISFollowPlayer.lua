@@ -18,15 +18,19 @@ function ISFollowPlayer.ActivateFollow(player, clickedPlayer)
     --         end
     --     end
     -- end
-    local vectorStop = ISVector2.newVector(0,0)
+    local vectorStop = ISVector2:new(0,0)
 
     local x,y = player:getX(), player:getY()
     print("player position x: " .. x .. " y: " .. y)
     local x2,y2 = clickedPlayer:getX(), clickedPlayer:getY()
     print("clickedPlayer position x: " .. x2 .. " y: " .. y2)
     -- Vector2 var3 = new Vector2(var2.x - var0.x, var0.y - var2.y); from updateMovementFromInput
-    local var3 = ISVector2.newVector(x2 - x, y - y2)
-    player:setPlayerMoveDir(var3)
+    local var3 = ISVector2:new(x2 - x, y - y2)
+    var3:rotate(-math.pi / 4) -- Rotate by -45 degrees
+    var3:normalize()
+    player:setPlayerMoveDir(var3.vector)
+
+
     -- if (!var2.isTeleporting() && !(var2.getDistanceSq(var0) > 10.0F)) {
     --     if (var2.getDistanceSq(var0) > 5.0F) {
     --        var0.setRunning(true);
@@ -39,23 +43,58 @@ function ISFollowPlayer.ActivateFollow(player, clickedPlayer)
     --     }
     local distanceSq = clickedPlayer:getDistanceSq(player)
     print("distanceSq: " .. tostring(distanceSq))
-    if distanceSq > 10.0 then
-        if distanceSq > 5.0 then
-        player:setRunning(true)
-        elseif distanceSq > 2.5 then
-        player:setRunning(true)
-        elseif distanceSq < 1.25 then
-        player:setRunning(false)
-        player:setSprinting(false)
-        player:setPlayerMoveDir(vectorStop)
+    if distanceSq <= 100.0 then
+        if distanceSq > 25.0 then -- 5^2 = 25
+            player:setRunning(true)
+            player:setSprinting(true)
+        elseif distanceSq > 6.25 then -- 2.5^2 = 6.25
+            player:setRunning(true)
+        elseif distanceSq < 1.5625 then -- 1.25^2 = 1.5625
+            player:setRunning(false)
+            player:setSprinting(false)
+            player:setPlayerMoveDir(vectorStop.vector)
         end
+    else
+        -- Handle the case when the target is too far
+        player:setPlayerMoveDir(vectorStop.vector)
     end
     
 end
 
-function ISFollowPlayer.FollowAction(player, clickedPlayer)
-    ISFollowPlayer.ActivateFollow(player, clickedPlayer)
+function ISFollowPlayer.FollowAction(worldobjects, playerObj, clickedPlayer)
+    -- ISTimedActionQueue.add(ISFollowPlayerTimedAction:new(playerObj, clickedPlayer)) -- still need to figure out
+    ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
+
 end
+
+--alternative method with Events onTick
+function ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
+    local function followTick()
+        if playerObj:isDead() or clickedPlayer:isDead() then
+            Events.OnTick.Remove(followTick)
+            return
+        end
+
+        local distanceSq = clickedPlayer:getDistanceSq(playerObj)
+        if distanceSq < 1.5625 then -- Close enough
+            playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
+            Events.OnTick.Remove(followTick)
+            return
+        elseif distanceSq > 10000 then -- Too far away (e.g., 100 units)
+            playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
+            Events.OnTick.Remove(followTick)
+            return
+        end
+
+        ISFollowPlayer.ActivateFollow(playerObj, clickedPlayer)
+    end
+    Events.OnTick.Add(followTick)
+end
+--Avoiding Multiple Follow Actions
+-- Ensure that you don't add multiple OnTick events for the same player. You might need to keep track of whether a player is already following someone.
+
+
+
 
 -- public static boolean updateMovementFromInput(IsoPlayer var0, IsoPlayer.MoveVars var1) -- MPDebugAI.class
 function ISFollowPlayer.MovementFromInput(player, x, y)
@@ -73,10 +112,10 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
     local playerObj = getSpecificPlayer(player)
     local followerCount = 0
     local followers = {}
-    for v,obj in ipairs(worldobjects) do --test
+    for i, obj in ipairs(worldobjects) do
         if instanceof(obj, "IsoPlayer") then
-            if not followers[clickedPlayer:getUsername()] then
-                followers[clickedPlayer:getUsername()] = clickedPlayer
+            if not followers[obj:getUsername()] then
+                followers[obj:getUsername()] = obj
                 followerCount = followerCount + 1
             end
         end
@@ -106,7 +145,7 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
         return
     end
     
-    local newOption = context:addOptionOnTop("Follow", worldobjects, nil);
+    local newOption = context:addOptionOnTop(getText("ContextMenu_Follow"), worldobjects, nil);
     local subMenu = ISContextMenu:getNew(context)
     context:addSubMenu(newOption, subMenu)
     for k,v in pairs(followers) do
