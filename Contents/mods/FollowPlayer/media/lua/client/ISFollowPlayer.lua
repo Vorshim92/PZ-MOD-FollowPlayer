@@ -18,7 +18,38 @@ function ISFollowPlayer.ActivateFollow(player, clickedPlayer)
     --         end
     --     end
     -- end
+    local vectorStop = ISVector2.newVector(0,0)
 
+    local x,y = player:getX(), player:getY()
+    print("player position x: " .. x .. " y: " .. y)
+    local x2,y2 = clickedPlayer:getX(), clickedPlayer:getY()
+    print("clickedPlayer position x: " .. x2 .. " y: " .. y2)
+    -- Vector2 var3 = new Vector2(var2.x - var0.x, var0.y - var2.y); from updateMovementFromInput
+    local var3 = ISVector2.newVector(x2 - x, y - y2)
+    player:setPlayerMoveDir(var3)
+    -- if (!var2.isTeleporting() && !(var2.getDistanceSq(var0) > 10.0F)) {
+    --     if (var2.getDistanceSq(var0) > 5.0F) {
+    --        var0.setRunning(true);
+    --        var0.setSprinting(true);
+    --     } else if (var2.getDistanceSq(var0) > 2.5F) {
+    --        var0.setRunning(true);
+    --     } else if (var2.getDistanceSq(var0) < 1.25F) {
+    --        var1.moveX = 0.0F;
+    --        var1.moveY = 0.0F;
+    --     }
+    local distanceSq = clickedPlayer:getDistanceSq(player)
+    print("distanceSq: " .. tostring(distanceSq))
+    if distanceSq > 10.0 then
+        if distanceSq > 5.0 then
+        player:setRunning(true)
+        elseif distanceSq > 2.5 then
+        player:setRunning(true)
+        elseif distanceSq < 1.25 then
+        player:setRunning(false)
+        player:setSprinting(false)
+        player:setPlayerMoveDir(vectorStop)
+        end
+    end
     
 end
 
