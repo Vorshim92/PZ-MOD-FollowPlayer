@@ -105,7 +105,7 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
                         for i = 0, sq:getMovingObjects():size() - 1 do
                             local clickedPlayer = sq:getMovingObjects():get(i)
 
-                            if not followers[clickedPlayer:getUsername()] then
+                            if ISFollowPlayer.CanFollowPlayer(playerObj, clickedPlayer) and not followers[clickedPlayer:getUsername()] then
                                 followers[clickedPlayer:getUsername()] = clickedPlayer
                                 followerCount = followerCount + 1
                             end

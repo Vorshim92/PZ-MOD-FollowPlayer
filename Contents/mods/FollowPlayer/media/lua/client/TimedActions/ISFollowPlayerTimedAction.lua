@@ -14,18 +14,40 @@ function ISFollowToTimedAction:isValid()
 end
 
 function ISFollowToTimedAction:update()
-
+    -- print(self.locationX .. " x " .. self.locationY)
     if instanceof(self.character, "IsoPlayer") and
             (self.character:pressedMovement(false) or self.character:pressedCancelAction()) then
         self:forceStop()
         return
     end
 
-    self.result = self.character:getPathFindBehavior2():update();
+    self.result = self.character:getPathFindBehavior2():update(); --??
 
-    if self.result == BehaviorResult.Failed then
+    if self.result == BehaviorResult.Failed then -- this stop the action if the character keeps trying to touch the clickedplayer, need to remove it? or we just need to change the behaviour of the path to let the charecter going to -1x -1y of the clickedplayer so that the character doesn't keep trying to touch the clickedplayer?
+        print ("ISFollowToTimedAction: pathfind failed");
         self:forceStop();
         return;
+    end
+
+    if self.result == BehaviorResult.Working then
+        --qui possiamo aggiornare il pathindex? con add node "pathNextIsSet" maybe?
+        print ("ISFollowToTimedAction: pathfind working");
+        return;
+    end
+
+    -- if self.character:getDistanceSq(self.clickedplayer) == 1 then
+    --     self:forceComplete();
+    --     return
+    -- end
+
+    -- need to recalcolate path if the clickedplayer moved
+    local x2,y2 = self.clickedplayer:getX(), self.clickedplayer:getY()
+    if x2 ~= self.locationX or y2 ~= self.locationY then
+        --print ("ISFollowToTimedAction: recalculating path")
+        self.locationX = x2
+        self.locationY = y2
+        self.character:pathToCharacter(self.clickedplayer);
+        
     end
 
     if self.additionalTest ~= nil then
@@ -91,7 +113,8 @@ function ISFollowToTimedAction:new (character, clickedplayer, additionalTest, ad
     o.stopOnRun = false;
     o.maxTime = -1;
     o.clickedplayer = clickedplayer
-    o.location = nil;
+    o.locationX = clickedplayer:getX()
+    o.locationY = clickedplayer:getY()
     o.pathIndex = 0;
     o.additionalTest = additionalTest;
     o.additionalContext = additionalContext;
