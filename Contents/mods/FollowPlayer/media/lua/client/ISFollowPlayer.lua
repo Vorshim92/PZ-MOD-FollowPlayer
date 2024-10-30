@@ -1,85 +1,10 @@
-local ISVector2 = require('ISVector2')
-
-ISFollowPlayer = {}
-function ISFollowPlayer.ActivateFollow(player, clickedPlayer)
-
-    local vectorStop = ISVector2:new(0,0)
-
-    local x,y = player:getX(), player:getY()
-    print("player position x: " .. x .. " y: " .. y)
-    local x2,y2 = clickedPlayer:getX(), clickedPlayer:getY()
-    print("clickedPlayer position x: " .. x2 .. " y: " .. y2)
-    -- Vector2 var3 = new Vector2(var2.x - var0.x, var0.y - var2.y); from updateMovementFromInput
-    local var3 = ISVector2:new(x2 - x, y - y2)
-    var3:rotate(-math.pi / 4) -- Rotate by -45 degrees
-    var3:normalize()
-    local pfb2 = player:getPathFindBehavior2()
-    player:pathToCharacter(clickedPlayer) -- ottimo per creare in automatico il path verso il player
-    -- player:setMoveForwardVec(var3.vector) --not working
-    player:MoveForward(1, x2, y2, 0)
-
-    local distanceSq = clickedPlayer:getDistanceSq(player)
-    print("distanceSq: " .. tostring(distanceSq))
-    if distanceSq <= 100.0 then
-        if distanceSq > 25.0 then -- 5^2 = 25
-            player:setRunning(true)
-            player:setSprinting(true)
-        elseif distanceSq > 6.25 then -- 2.5^2 = 6.25
-            player:setRunning(true)
-        elseif distanceSq < 1.5625 then -- 1.25^2 = 1.5625
-            player:setRunning(false)
-            player:setSprinting(false)
-        end
-    else
-        -- Handle the case when the target is too far
-    end
-    
-end
+local ISFollowPlayer = {}
 
 function ISFollowPlayer.FollowAction(worldobjects, playerObj, clickedPlayer)
     ISTimedActionQueue.add(ISFollowToTimedAction:new(playerObj, clickedPlayer)) -- still need to figure out
     -- ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
 
 end
-
---alternative method with Events onTick
-function ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
-    -- local function followTick()
-    --     if playerObj:isDead() or clickedPlayer:isDead() then
-    --         Events.OnTick.Remove(followTick)
-    --         return
-    --     end
-
-    --     local distanceSq = clickedPlayer:getDistanceSq(playerObj)
-    --     if distanceSq < 1.5625 then -- Close enough
-    --         playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
-    --         Events.OnTick.Remove(followTick)
-    --         return
-    --     elseif distanceSq > 1000 then -- Too far away (e.g., 100 units)
-    --         playerObj:setPlayerMoveDir(ISVector2:new(0, 0).vector)
-    --         Events.OnTick.Remove(followTick)
-    --         return
-    --     end
-
-    --     ISFollowPlayer.ActivateFollow(playerObj, clickedPlayer)
-    -- end
-    -- Events.OnTick.Add(followTick)
-end
---Avoiding Multiple Follow Actions
--- Ensure that you don't add multiple OnTick events for the same player. You might need to keep track of whether a player is already following someone.
-
-
-
-
--- public static boolean updateMovementFromInput(IsoPlayer var0, IsoPlayer.MoveVars var1) -- MPDebugAI.class
-function ISFollowPlayer.MovementFromInput(player, x, y)
-    -- from IsoPlayer
-    -- public void setPlayerMoveDir(Vector2 var1) {
-    --     this.playerMoveDir.set(var1);
-    --  }
-  
-end
-
 
 function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
 
@@ -122,14 +47,12 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
 end
 
  function ISFollowPlayer.CanFollowPlayer(character, clickedPlayer)
-    -- if not isClient() or SandboxVars.PlayerTradeOptions.disabled then
-    --     return false
-    -- end
-
-    -- You already thade with someone.
-    -- if ISTradingUI.instance and ISTradingUI.instance:isVisible() then
-    --     return false
-    -- end
+    if isAdmin() then
+        return true
+    end
+    if SandboxVars.ISFollowPlayer.disabled then
+        return false
+    end
 
     if not instanceof(clickedPlayer, "IsoPlayer") or clickedPlayer == character then
         return false
@@ -142,6 +65,11 @@ end
     if  clickedPlayer:isInvisible() then
         return false
     end
+
+    if clickedPlayer:isDriving() then
+        return false
+    end
+    
 
     return true
 end

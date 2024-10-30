@@ -31,8 +31,10 @@ function ISFollowToTimedAction:update()
             self.character:setRunning(false)
             self.character:setSprinting(false)
         end
-    -- else
-    --     -- Handle the case when the target is too far
+    else
+        -- Handle the case when the target is too far
+        self:forceStop();
+        return;
     end
     
     self.result = self.character:getPathFindBehavior2():update();
@@ -43,21 +45,17 @@ function ISFollowToTimedAction:update()
     end
 
     if self.result == BehaviorResult.Working then
-        --qui possiamo aggiornare il pathindex? con add node "pathNextIsSet" maybe?
         -- print ("ISFollowToTimedAction: pathfind working");
     end
 
-    if distanceSq == 1 then
-        -- print("ISFollowToTimedAction: I'm at 1 tile from the clickedplayer");
-        -- self:forceComplete();
-        -- return
-    end
+    -- if distanceSq == 1 then
+    -- end
 
     -- need to recalcolate path if the clickedplayer moved
     local square = self.clickedplayer:getSquare()
 
     if square ~= self.square then
-        self.character:pathToLocation(square:getX()-1, square:getY()-1, square:getZ());
+        self.character:pathToLocation(square:getX(), square:getY(), square:getZ());
         self.square = square
     end
         
