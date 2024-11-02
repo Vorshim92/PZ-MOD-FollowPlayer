@@ -8,13 +8,14 @@ require "TimedActions/ISBaseTimedAction"
 
 ISFollowToTimedAction = ISBaseTimedAction:derive("ISFollowToTimedAction");
 
+
 function ISFollowToTimedAction:isValid()
 	if self.character:getVehicle() then return false end
     return getGameSpeed() <= 2;
 end
 
 function ISFollowToTimedAction:update()
-    if (self.character:pressedMovement(false) or self.character:pressedCancelAction()) then
+    if (self.character:pressedMovement(false) or self.character:pressedCancelAction() or self.character:pressedAim()) then
         self:forceStop()
         return
     end
@@ -55,8 +56,7 @@ function ISFollowToTimedAction:update()
     local square = self.clickedplayer:getSquare()
 
     if square ~= self.square then
-        self.character:pathToLocation(square:getX(), square:getY(), square:getZ());
-        self.square = square
+        self:updatePathToBehindPlayer()
     end
         
 
@@ -74,9 +74,38 @@ function ISFollowToTimedAction:update()
 
 end
 
+function ISFollowToTimedAction:updatePathToBehindPlayer()
+    -- Get the clickedplayer's position and direction
+    local cpX = self.clickedplayer:getX()
+    local cpY = self.clickedplayer:getY()
+    local cpZ = self.clickedplayer:getZ()
+    local cpDir = self.clickedplayer:getDir()
+
+    -- Get the opposite direction
+    local oppositeDir = IsoDirections.reverse(cpDir)
+
+    -- Get the vector for that direction using ToVector()
+    local dirVector = oppositeDir:ToVector()
+
+    -- Desired distance behind the clickedplayer
+    local desiredDistanceBehind = 1 -- Adjust this value as needed
+
+    -- Calculate target position
+    local targetX = cpX + dirVector:getX() --* desiredDistanceBehind
+    local targetY = cpY + dirVector:getY() --* desiredDistanceBehind
+    local targetZ = cpZ
+
+    -- Path to that location
+    self.character:pathToLocation(targetX, targetY, targetZ)
+
+    -- Update the stored square
+    self.square = self.clickedplayer:getSquare()
+end
+
+
 function ISFollowToTimedAction:start()
     --print ("ISFollowToTimedAction: Calling pathfind method.");
-    self.character:pathToLocation(self.square:getX()-1, self.square:getY()-1, self.square:getZ());
+    self:updatePathToBehindPlayer()
     --self.action:Pathfind(getPlayer(), self.location:getX(), self.location:getY(), self.location:getZ());
 end
 
