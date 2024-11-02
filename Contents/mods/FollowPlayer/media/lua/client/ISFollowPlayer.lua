@@ -47,14 +47,13 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
 end
 
  function ISFollowPlayer.CanFollowPlayer(character, clickedPlayer)
+    if not instanceof(clickedPlayer, "IsoPlayer") or clickedPlayer:getUsername() == character:getUsername() then
+        return false
+    end
     if isAdmin() then
         return true
     end
     if SandboxVars.ISFollowPlayer.disabled then
-        return false
-    end
-
-    if not instanceof(clickedPlayer, "IsoPlayer") or clickedPlayer == character then
         return false
     end
 

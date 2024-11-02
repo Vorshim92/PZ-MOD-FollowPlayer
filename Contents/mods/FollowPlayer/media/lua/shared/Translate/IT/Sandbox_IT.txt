@@ -1,4 +1,4 @@
 Sandbox_IT = {
-    Sandbox_FP = "Segui il giocatore",
+    Sandbox_FP = "Follow Player",
     Sandbox_FP_Disabled = "Segui il giocatore disabilitato",
 }
