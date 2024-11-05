@@ -1,6 +1,6 @@
 version=1
-id=
+id=3360325879
 title=Follow Player (like on WoW)
 description=This mod allows you to follow the player.
-tags=Build 41;
+tags=Build 41;Multiplayer
 visibility=public
