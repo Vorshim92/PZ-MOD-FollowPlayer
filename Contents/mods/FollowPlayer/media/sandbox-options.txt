@@ -1,10 +1,9 @@
 VERSION = 1,
 
-option ISFollowPlayer.disabled
+option ISFollowPlayer.disabled = 
 {
   type = boolean,
   default = false,
-
   page = FP,
   translation = FP_Disabled,
 }
