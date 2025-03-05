@@ -7,3 +7,11 @@ option ISFollowPlayer.disabled =
   page = FP,
   translation = FP_Disabled,
 }
+
+option ISFollowPlayer.realName = 
+{
+  type = boolean,
+  default = true,
+  page = FP,
+  translation = FP_RealName,
+}

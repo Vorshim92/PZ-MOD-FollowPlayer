@@ -5,6 +5,11 @@ function ISFollowPlayer.FollowAction(worldobjects, playerObj, clickedPlayer)
     -- ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
 
 end
+function ISFollowPlayer.AddFollowPlayerAction(worldobjects, playerObj, clickedPlayer)
+    ISTimedActionQueue.add(FollowPlayerAction:new(playerObj, clickedPlayer)) -- still need to figure out
+    -- ISFollowPlayer.StartFollowing(playerObj, clickedPlayer)
+
+end
 
 function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
 
@@ -41,8 +46,11 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
     local newOption = context:addOptionOnTop(getText("ContextMenu_Follow"), worldobjects, nil);
     local subMenu = ISContextMenu:getNew(context)
     context:addSubMenu(newOption, subMenu)
+    local isName = SandboxVars.ISFollowPlayer.realName
     for k,v in pairs(followers) do
-        subMenu:addOption(v:getDisplayName(), worldobjects, ISFollowPlayer.FollowAction, playerObj, v)
+        local characterName = v:getDescriptor():getForename() .. " " .. v:getDescriptor():getSurname();
+        local followOpt = subMenu:addOption((isName and characterName or v:getUsername()), worldobjects, ISFollowPlayer.FollowAction, playerObj, v)
+        followOpt.iconTexture = getTexture("media/ui/follow.png")
     end
 end
 

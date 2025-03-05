@@ -1,4 +1,5 @@
 Sandbox_IT = {
     Sandbox_FP = "Follow Player",
     Sandbox_FP_Disabled = "Segui il giocatore disabilitato",
+    Sandbox_FP_RealName = "Usa il nome reale",
 }

@@ -1,4 +1,5 @@
 Sandbox_EN = {
     Sandbox_FP = "Follow Player",
     Sandbox_FP_Disabled = "Follow Player Disabled",
+    Sandbox_FP_RealName = "Use Real Name",
 }
