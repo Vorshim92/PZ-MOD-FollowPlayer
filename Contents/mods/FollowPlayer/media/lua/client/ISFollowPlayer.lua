@@ -65,6 +65,10 @@ end
         return false
     end
 
+    if clickedPlayer:getSafety():isEnabled() then
+        return false
+    end
+
     if clickedPlayer:isAsleep() then
         return false
     end
