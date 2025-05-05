@@ -65,7 +65,7 @@ end
         return false
     end
 
-    if clickedPlayer:getSafety():isEnabled() then
+    if not clickedPlayer:getSafety():isEnabled() then
         return false
     end
 
