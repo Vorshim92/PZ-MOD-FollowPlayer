@@ -34,6 +34,7 @@ function ISFollowPlayer.onFillContext(player, context, worldobjects, test)
                             local clickedPlayer = movingObjects:get(i)
                             -- Check instanceof FIRST before calling any IsoPlayer-specific methods
                             if instanceof(clickedPlayer, "IsoPlayer") then
+                                ---@cast clickedPlayer IsoPlayer
                                 local username = clickedPlayer:getUsername()
                                 if ISFollowPlayer.CanFollowPlayer(playerObj, clickedPlayer) and not followers[username] then
                                     followers[username] = clickedPlayer
@@ -65,7 +66,7 @@ end
 ---@param character IsoPlayer The player who wants to follow
 ---@param clickedPlayer IsoPlayer The player to be followed
 ---@return boolean canFollow Whether following is allowed
- function ISFollowPlayer.CanFollowPlayer(character, clickedPlayer)
+function ISFollowPlayer.CanFollowPlayer(character, clickedPlayer)
     -- instanceof check is now done in caller (onFillContext)
     if clickedPlayer:getUsername() == character:getUsername() then
         return false
