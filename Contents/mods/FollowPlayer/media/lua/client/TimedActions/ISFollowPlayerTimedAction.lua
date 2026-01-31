@@ -149,7 +149,9 @@ end
 ---@param clickedplayer IsoPlayer The player to follow
 ---@return ISFollowToTimedAction
 function ISFollowToTimedAction:new(character, clickedplayer)
-    local o = ISBaseTimedAction.new(self, character)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
     o.clickedplayer = clickedplayer
     o.square = clickedplayer:getSquare()
     o.tick = 0
